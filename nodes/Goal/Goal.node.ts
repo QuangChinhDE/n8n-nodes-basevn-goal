@@ -10,14 +10,14 @@ import { checkin, cycle, goal, keyResult, target, description } from './resource
 
 export class Goal implements INodeType {
 description: INodeTypeDescription = {
-displayName: 'Goal',
+displayName: 'BaseVN - App Goal',
 name: 'goal',
-icon: 'file:goal.svg',
+icon: 'file:../../icons/goal.svg',
 group: ['transform'],
 version: 1,
 usableAsTool: true,
 subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
-description: 'Interact with Goal API for OKR/KPI management',
+description: 'Interact with BaseVN Goal API',
 defaults: {
 name: 'Goal',
 },
