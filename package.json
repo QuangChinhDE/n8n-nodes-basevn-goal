@@ -35,7 +35,8 @@
 			"dist/credentials/GoalApi.credentials.js"
 		],
 		"nodes": [
-			"dist/nodes/Goal/Goal.node.js"
+			"dist/nodes/Goal/Goal.node.js",
+			"dist/nodes/Goal/GoalTrigger.node.js"
 		]
 	},
 	"devDependencies": {
