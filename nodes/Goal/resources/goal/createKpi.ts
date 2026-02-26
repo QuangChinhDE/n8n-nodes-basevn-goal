@@ -1,4 +1,4 @@
-import type { IExecuteFunctions, INodeExecutionData, INodeProperties } from 'n8n-workflow';
+import type { IDataObject, IExecuteFunctions, INodeExecutionData, INodeProperties } from 'n8n-workflow';
 import { goalApiRequest } from '../../shared/transport';
 import { processResponse } from '../../shared/utils';
 
@@ -133,7 +133,7 @@ export async function execute(this: IExecuteFunctions, index: number): Promise<I
 	const status = this.getNodeParameter('status', index, 1) as number;
 	const content = this.getNodeParameter('content', index, '') as string;
 	const parent_id = this.getNodeParameter('parent_id', index, 0) as number;
-	const customFields = this.getNodeParameter('customFields', index, {}) as any;
+	const customFields = this.getNodeParameter('customFields', index, {}) as IDataObject;
 
 	// Process custom fields (auto-add goal_ prefix)
 	const customFieldsData: { [key: string]: string } = {};
