@@ -140,6 +140,18 @@ export async function execute(this: IExecuteFunctions, index: number): Promise<I
 	const weight = this.getNodeParameter('weight', index, 1) as number;
 	const content = this.getNodeParameter('content', index, '') as string;
 	const parent_id = this.getNodeParameter('parent_id', index, 0) as number;
+	const customFields = this.getNodeParameter('customFields', index, {}) as any;
+
+	// Process custom fields (auto-add goal_ prefix)
+	const customFieldsData: { [key: string]: string } = {};
+	if (customFields.fields && Array.isArray(customFields.fields)) {
+		for (const field of customFields.fields as Array<{name: string; value: string}>) {
+			if (field.name && field.value) {
+				const fieldName = field.name.startsWith('goal_') ? field.name : `goal_${field.name}`;
+				customFieldsData[fieldName] = field.value;
+			}
+		}
+	}
 
 	const body: { [key: string]: string | number } = {
 		cycle_path,
@@ -158,6 +170,9 @@ export async function execute(this: IExecuteFunctions, index: number): Promise<I
 	if (content) body.content = content;
 	if (parent_id) body.parent_id = parent_id;
 
+
+	// Add custom fields to body
+	Object.assign(body, customFieldsData);
 	const response = await goalApiRequest.call(this, 'POST', '/goal/create.okr', body);
 	const data = processResponse(response);
 

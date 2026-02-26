@@ -100,6 +100,18 @@ export const description: INodeProperties[] = [
 		default: 1,
 	},
 	{
+		displayName: 'Status',
+		name: 'status',
+		type: 'options',
+		displayOptions: { show: { resource: ['target'], operation: ['createTeamKpi'] } },
+		options: [
+			{ name: 'Active', value: 1 },
+			{ name: 'Draft', value: 0 },
+		],
+		default: 1,
+		description: 'Target status',
+	},
+	{
 		displayName: 'Departments to View',
 		name: 'depts_to_view',
 		type: 'string',
@@ -116,6 +128,39 @@ export const description: INodeProperties[] = [
 		description: 'Target description',
 		typeOptions: { rows: 3 },
 	},
+	{
+		displayName: 'Custom Fields',
+		name: 'customFields',
+		type: 'fixedCollection',
+		typeOptions: { multipleValues: true },
+		placeholder: 'Add Custom Field',
+		default: {},
+		displayOptions: { show: { resource: ['goal'], operation: ['createTeamKpi'] } },
+		description: 'Custom fields specific to the target',
+		options: [
+			{
+				name: 'fields',
+				displayName: 'Field',
+				values: [
+					{
+						displayName: 'Field Name',
+						name: 'name',
+						type: 'string',
+						default: '',
+						placeholder: 'e.g., note, priority, file',
+						description: 'Tên custom field ("goal_" prefix sẽ tự động thêm vào)',
+					},
+					{
+						displayName: 'Field Value',
+						name: 'value',
+						type: 'string',
+						default: '',
+						description: 'Value of the custom field',
+					},
+				],
+			},
+		],
+	}
 ];
 
 export async function execute(this: IExecuteFunctions, index: number): Promise<INodeExecutionData[]> {
@@ -132,6 +177,19 @@ export async function execute(this: IExecuteFunctions, index: number): Promise<I
 	const privacy = this.getNodeParameter('privacy', index, 1) as number;
 	const depts_to_view = this.getNodeParameter('depts_to_view', index, '') as string;
 	const content = this.getNodeParameter('content', index, '') as string;
+	const status = this.getNodeParameter('status', index, 1) as number;
+	const customFields = this.getNodeParameter('customFields', index, {}) as any;
+
+	// Process custom fields (auto-add goal_ prefix)
+	const customFieldsData: { [key: string]: string } = {};
+	if (customFields.fields && Array.isArray(customFields.fields)) {
+		for (const field of customFields.fields as Array<{name: string; value: string}>) {
+			if (field.name && field.value) {
+				const fieldName = field.name.startsWith('goal_') ? field.name : `goal_${field.name}`;
+				customFieldsData[fieldName] = field.value;
+			}
+		}
+	}
 
 	const body: { [key: string]: string | number } = {
 		cycle_path,
@@ -147,9 +205,13 @@ export async function execute(this: IExecuteFunctions, index: number): Promise<I
 	if (start_time) body.start_time = start_time;
 	if (end_time) body.end_time = end_time;
 	body.privacy = privacy;
+	body.status = status;
 	if (depts_to_view) body.depts_to_view = depts_to_view;
 	if (content) body.content = content;
 
+
+	// Add custom fields to body
+	Object.assign(body, customFieldsData);
 	const response = await goalApiRequest.call(this, 'POST', '/target/create/kpi.team', body);
 	const data = processResponse(response);
 
